@@ -1,0 +1,57 @@
+<application>
+  <component name="ActionsLocalSummary">
+    <data>
+      <entry key="$Copy">
+        <ActionSummary times="1" last="1589184782178" />
+      </entry>
+      <entry key="EditorBackSpace">
+        <ActionSummary times="82" last="1589184897037" />
+      </entry>
+      <entry key="EditorEnter">
+        <ActionSummary times="3" last="1589184816772" />
+      </entry>
+      <entry key="EditorLeft">
+        <ActionSummary times="1" last="1589184729565" />
+      </entry>
+      <entry key="EditorRight">
+        <ActionSummary times="33" last="1589184809659" />
+      </entry>
+      <entry key="EditorUp">
+        <ActionSummary times="3" last="1589184821436" />
+      </entry>
+      <entry key="Exit">
+        <ActionSummary times="1" last="1589181761541" />
+      </entry>
+      <entry key="KotlinConsoleREPL">
+        <ActionSummary times="1" last="1589184664042" />
+      </entry>
+      <entry key="PasteMultiple">
+        <ActionSummary times="1" last="1589184783952" />
+      </entry>
+      <entry key="ShowSettings">
+        <ActionSummary times="21" last="1589184824808" />
+      </entry>
+      <entry key="WelcomeScreen.CreateNewProject">
+        <ActionSummary times="1" last="1589181650977" />
+      </entry>
+      <entry key="com.intellij.ide.plugins.newui.TabbedPaneHeaderComponent$3">
+        <ActionSummary times="4" last="1589183728489" />
+      </entry>
+      <entry key="com.intellij.openapi.wm.impl.ToolWindowHeader$HideAction">
+        <ActionSummary times="4" last="1589182263116" />
+      </entry>
+      <entry key="com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsActionGroup$HideCurrentWidgetAction">
+        <ActionSummary times="1" last="1589183158414" />
+      </entry>
+      <entry key="com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsActionGroup$ToggleWidgetAction">
+        <ActionSummary times="7" last="1589183171967" />
+      </entry>
+      <entry key="com.mallowigi.idea.config.ui.load.MTLoadCustomThemeComboBoxAction$1">
+        <ActionSummary times="2" last="1589183862285" />
+      </entry>
+      <entry key="org.jetbrains.kotlin.console.actions.KtExecuteCommandAction">
+        <ActionSummary times="9" last="1589184901158" />
+      </entry>
+    </data>
+  </component>
+</application>

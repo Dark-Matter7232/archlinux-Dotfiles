@@ -1,0 +1,3 @@
+com.markskelton.one-dark-theme
+com.thvardhan.gradianto
+com.vermouthx.idea
