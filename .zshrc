@@ -1,151 +1,86 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+# Enable colors and change prompt:
+autoload -U colors && colors	# Load colors
+PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
+setopt autocd		# Automatically cd into typed directory.
+stty stop undef		# Disable ctrl-s to freeze terminal.
 
-# Path to your oh-my-zsh installation.
-export ZSH="/home/anuragrai/.oh-my-zsh"
+# History in cache directory:
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE=~/.cache/zsh/history
 
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-#ZSH_THEME="robbyrussell"
+# Load aliases and shortcuts if existent.
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/shortcutrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/shortcutrc"
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/aliasrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/aliasrc"
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config}/zshnameddirrc" ] && source "${XDG_CONFIG_HOME:-$HOME/.config}/zshnameddirrc"
 
-# Set list of themes to pick from when loading at random
-# Setting this variable when ZSH_THEME=random will cause zsh to load
-# a theme from this variable instead of looking in ~/.oh-my-zsh/themes/
-# If set to an empty array, this variable will have no effect.
-# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+# Basic auto/tab complete:
+autoload -U compinit
+zstyle ':completion:*' menu select
+zmodload zsh/complist
+compinit
+_comp_options+=(globdots)		# Include hidden files.
 
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
+# vi mode
+bindkey -v
+export KEYTIMEOUT=1
 
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
+# Use vim keys in tab complete menu:
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
+bindkey -v '^?' backward-delete-char
 
-# Uncomment the following line to disable bi-weekly auto-update checks.
-# DISABLE_AUTO_UPDATE="true"
+# Change cursor shape for different vi modes.
+function zle-keymap-select {
+  if [[ ${KEYMAP} == vicmd ]] ||
+     [[ $1 = 'block' ]]; then
+    echo -ne '\e[1 q'
+  elif [[ ${KEYMAP} == main ]] ||
+       [[ ${KEYMAP} == viins ]] ||
+       [[ ${KEYMAP} = '' ]] ||
+       [[ $1 = 'beam' ]]; then
+    echo -ne '\e[5 q'
+  fi
+}
+zle -N zle-keymap-select
+zle-line-init() {
+    zle -K viins # initiate `vi insert` as keymap (can be removed if `bindkey -V` has been set elsewhere)
+    echo -ne "\e[5 q"
+}
+zle -N zle-line-init
+echo -ne '\e[5 q' # Use beam shape cursor on startup.
+preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
 
-# Uncomment the following line to automatically update without prompting.
-# DISABLE_UPDATE_PROMPT="true"
+# Use lf to switch directories and bind it to ctrl-o
+lfcd () {
+    tmp="$(mktemp)"
+    lf -last-dir-path="$tmp" "$@"
+    if [ -f "$tmp" ]; then
+        dir="$(cat "$tmp")"
+        rm -f "$tmp" >/dev/null
+        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && cd "$dir"
+    fi
+}
+bindkey -s '^o' 'lfcd\n'
 
-# Uncomment the following line to change how often to auto-update (in days).
-# export UPDATE_ZSH_DAYS=13
+bindkey -s '^a' 'bc -l\n'
 
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS=true
+bindkey -s '^f' 'cd "$(dirname "$(fzf)")"\n'
 
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
+bindkey '^[[P' delete-char
 
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
+# Edit line in vim with ctrl-e:
+autoload edit-command-line; zle -N edit-command-line
+bindkey '^e' edit-command-line
 
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
 
-# Uncomment the following line to display red dots whilst waiting for completion.
-# COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load?
-# Standard plugins can be found in ~/.oh-my-zsh/plugins/*
-# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
-
-source $ZSH/oh-my-zsh.sh
-
-# User configuration
-
-# export MANPATH="/usr/local/man:$MANPATH"
-
-# You may need to manually set your language environment
-# export LANG=en_US.UTF-8
-
-# Preferred editor for local and remote sessions
-# if [[ -n $SSH_CONNECTION ]]; then
-#   export EDITOR='vim'
-# else
-#   export EDITOR='mvim'
-# fi
-
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
-
-# Set personal aliases, overriding those provided by oh-my-zsh libs,
-# plugins, and themes. Aliases can be placed here, though oh-my-zsh
-# users are encouraged to define aliases within the ZSH_CUSTOM folder.
-# For a full list of active aliases, run `alias`.
-#
-# Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
-#  _____    _
-# |__  /___| |__  _ __ ___
-#   / // __| '_ \| '__/ __|
-#  / /_\__ \ | | | | | (__
-# /____|___/_| |_|_|  \___|
-
-# Aliases for a few useful commands
-alias mirrorUpdate='sudo reflector --latest 250 --protocol https --sort rate --save /etc/pacman.d/mirrorlist'
-alias pacmanGhost='~/.scripts/pacman.sh'
-alias shivita='toilet -f mono12 -F rainbow 'andrea' | ponythink -f winona'
-alias ll="ls -l --group-directories-first"
-alias ls="ls -h --color"    # add colors for filetype recognition
-alias la="ls -a --color"    # show hidden files
-alias lx="ls -xb"           # sort by extension
-alias lk="ls -lSr"          # sort by size, biggest last
-alias lc="ls -ltcr"         # sort by and show change time, most recent last
-alias lu="ls -ltur"         # sort by and show access time, most recent last
-alias lt="ls -ltr"          # sort by date, most recent last
-alias lm="ls -al |more"     # pipe through 'more'
-alias lr="ls -lR"           # recursive ls
-alias lsr="tree -Csu"       # nice alternative to 'recursive ls'
-alias lt='ls --tree'
-alias ip='ip -c'
-alias rm='rm -i'
-alias x='ranger'
-alias c='cmus'
-alias h='htop'
-alias cls='clear && neofetch'
-alias gitu='git add . && git commit && git push'
-alias more="less"
-alias ":q"="exit"
-alias ps="ps auxf"
-alias psgrep="ps aux | grep -v grep | grep -i -e VSZ -e"
-alias uid1000="awk '$3==1000 && $1!=\"nobody\" {print $1}' FS=':' /etc/passwd"
-alias grubupd="sudo grub-mkconfig -o /boot/grub/grub.cfg"
-alias vimc='vim ~/.config/nvim/'
-alias vimrc='vim ~/.zshrc'
-alias df='df -h'                                                                     
-alias diff='colordiff'
-alias pac='sudo pacman -S'   # install
-alias pacu='sudo pacman -Syu'    # update, add 'a' to the list of letters to update AUR packages if you use y>
-alias pacr='sudo pacman -Rs'   # remove
-alias pacs='sudo pacman -Ss'      # search
-alias paci='sudo pacman -Si'      # info
-alias paclo='sudo pacman -Qdt'    # list orphans
-alias pacro='sudo paclo && sudo pacman -Rns $(pacman -Qtdq)' # remove orphans
-alias pacc='sudo pacman -Scc'    # clean cache
-alias paclf='sudo pacman -Ql'   # list file
-#--------------------Functions-Start--------------------#
+plugins=(git zsh-completions zsh-autosuggestions zsh-syntax-highlighting git)
+autoload -U compinit && compinit
+source ~/.oh-my-zsh/oh-my-zsh.sh
+setopt HIST_IGNORE_SPACE
+export VAULT_SKIP_VERIFY=tru
 # Efficient and fairly portable way to display the current iface.
 [ -x /sbin/ip ] && alias iface='X=(`/sbin/ip route`) && echo ${X[4]}'
 
@@ -177,6 +112,10 @@ if type -fP youtube-dl > /dev/null 2>&1; then
 	alias ytpla="youtube-dl -cix --audio-format mp3 --sleep-interval 5 --yes-playlist --no-call-home --console-title --quiet --ignore-errors" #: Download HQ videos from YouTube playlist, using youtube-dl.
 	alias ytplv="youtube-dl -ci --yes-playlist --sleep-interval 5 --format best --no-call-home --console-title --quiet --ignore-errors" #: Download HQ audio from YouTube playlist, using youtube-dl.
 fi
+
+###############################<-Git Prompt->#############################
+# enable substitution for prompt
+setopt prompt_subst
 # Modify the colors and symbols in these variables as desired.
 GIT_PROMPT_SYMBOL="%{$fg[blue]%}±"                              # plus/minus     - clean repo
 GIT_PROMPT_PREFIX="%{$fg[green]%}[%{$reset_color%}"
@@ -225,129 +164,60 @@ parse_git_state() {
 
 git_prompt_string() {
   local git_where="$(parse_git_branch)"
-  
+
   # If inside a Git repository, print its branch and state
   [ -n "$git_where" ] && echo "$GIT_PROMPT_SYMBOL$(parse_git_state)$GIT_PROMPT_PREFIX%{$fg[yellow]%}${git_where#(refs/heads/|tags/)}$GIT_PROMPT_SUFFIX"
-  
+
   # If not inside the Git repo, print exit codes of last command (only if it failed)
   [ ! -n "$git_where" ] && echo "%{$fg[red]%} %(?..[%?])"
 }
-#--------------------Functions-End----------------------#
-# Show OS info when opening a new terminal
-neofetch 
+###############################<-Git Prompt->#############################
 
-# Font mode for powerlevel9k
-P9K_MODE="nerdfont-complete"
-
-# Prompt elements
-P9K_LEFT_PROMPT_ELEMENTS=(custom_user dir vcs)
-P9K_RIGHT_PROMPT_ELEMENTS=(background_jobs go_version virtualenv)
-
-# Set name of the theme to load.
-ZSH_THEME="powerlevel9k/powerlevel9k"
-
-# Prompt settings
-P9K_PROMPT_ON_NEWLINE=true
-P9K_RPROMPT_ON_NEWLINE=true
-P9K_MULTILINE_FIRST_PROMPT_PREFIX_ICON=$'%K{white}%k'
-P9K_MULTILINE_LAST_PROMPT_PREFIX_ICON=$'%K{green}%F{black} \uf155 %f%F{green}%k\ue0b0%f '
-
-# Separators
-P9K_LEFT_SEGMENT_SEPARATOR_ICON=$'\ue0b0'
-P9K_LEFT_SUBSEGMENT_SEPARATOR_ICON=$'\ue0b1'
-P9K_RIGHT_SEGMENT_SEPARATOR_ICON=$'\ue0b2'
-P9K_RIGHT_SUBSEGMENT_SEPARATOR_ICON=$'\ue0b7'
-
-# Dir colours
-P9K_DIR_HOME_BACKGROUND='black'
-P9K_DIR_HOME_FOREGROUND='white'
-P9K_DIR_HOME_SUBFOLDER_BACKGROUND='black'
-P9K_DIR_HOME_SUBFOLDER_FOREGROUND='white'
-P9K_DIR_DEFAULT_BACKGROUND='yellow'
-P9K_DIR_DEFAULT_FOREGROUND='black'
-P9K_DIR_SHORTEN_LENGTH=2
-P9K_DIR_SHORTEN_STRATEGY="truncate_from_right"
-
-# OS segment
-P9K_OS_ICON_BACKGROUND='black'
-P9K_LINUX_ICON='%F{cyan} \uf303 %F{white} arch %F{cyan}linux%f'
-
-# VCS icons
-P9K_VCS_GIT_ICON=$'\uf1d2 '
-P9K_VCS_GIT_GITHUB_ICON=$'\uf113 '
-P9K_VCS_GIT_GITLAB_ICON=$'\uf296 '
-P9K_VCS_BRANCH_ICON=$''
-P9K_VCS_STAGED_ICON=$'\uf055'
-P9K_VCS_UNSTAGED_ICON=$'\uf421'
-P9K_VCS_UNTRACKED_ICON=$'\uf00d'
-P9K_VCS_INCOMING_CHANGES_ICON=$'\uf0ab '
-P9K_VCS_OUTGOING_CHANGES_ICON=$'\uf0aa '
-
-# VCS colours
-P9K_VCS_MODIFIED_BACKGROUND='blue'
-P9K_VCS_MODIFIED_FOREGROUND='black'
-P9K_VCS_UNTRACKED_BACKGROUND='green'
-P9K_VCS_UNTRACKED_FOREGROUND='black'
-P9K_VCS_CLEAN_BACKGROUND='green'
-P9K_VCS_CLEAN_FOREGROUND='black'
-
-# VCS CONFIG
-P9K_VCS_SHOW_CHANGESET=false
-
-# Status
-P9K_STATUS_OK_ICON=$'\uf164'
-P9K_STATUS_ERROR_ICON=$'\uf165'
-P9K_STATUS_ERROR_CR_ICON=$'\uf165'
-
-# Battery
-P9K_BATTERY_LOW_FOREGROUND='red'
-P9K_BATTERY_CHARGING_FOREGROUND='blue'
-P9K_BATTERY_CHARGED_FOREGROUND='green'
-P9K_BATTERY_DISCONNECTED_FOREGROUND='blue'
-P9K_BATTERY_VERBOSE=true
-
-# Programming languages
-P9K_RBENV_PROMPT_ALWAYS_SHOW=true
-P9K_GO_VERSION_PROMPT_ALWAYS_SHOW=true
-P9K_VIRTUALENV_FOREGROUND='white'
-P9K_VIRTUALENV_BACKGROUND='darkblue'
-
-# User with skull
-user_with_skull() {
-    echo -n " 阿努拉格"
+###############################<-Custom Defined Functions->#############################
+# Use skim to fuzzy find files(ignores dotfiles)
+skf() {
+  mode=$1
+  if [ $mode = "nvim" ]; then
+     nvim $(find . -not -path '*/\.*'| sk --layout=reverse-list --preview="less {1}" --preview-window=up)
+  else
+     find . -not -path '*/\.*'| sk --layout=reverse-list --preview="less {1}" --preview-window=up 
+  fi
+  
 }
-P9K_CUSTOM_USER="user_with_skull"
-
-# Command auto-correction.
-ENABLE_CORRECTION="true"
-
-# Command execution time stamp shown in the history command output.
-HIST_STAMPS="mm/dd/yyyy"
-DISABLE_LS_COLORS="true"
-
-# Plugins to load
-plugins=(
-    colorize
-    copyfile
-    git
-    gitfast
-    history-substring-search
-    kubectl
-    safe-paste
-    zsh-autosuggestions
-    zsh-completions
-    zsh-history-substring-search
-    zsh-syntax-highlighting
-)
-
-setopt HIST_IGNORE_SPACE
-autoload -U compinit && compinit
-source $ZSH/oh-my-zsh.sh
-complete -o nospace -C /usr/bin/vault vault
-complete -o nospace -C /usr/bin/terraform terraform
-
-export VAULT_SKIP_VERIFY=true
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-alias config='/usr/bin/git --git-dir=/home/anuragrai/.cfg/ --work-tree=/home/anuragrai'
+# Check memory footprint of a program(got from Dash Eclipse's dotfiles)
+memu() {
+	local CHECK=" $@"
+	[ -z $1 ] || [ "${CHECK#* -}" != "$CHECK" ] && { echo "Usage: memu program [program...]"; return 1; }
+	local PIDS=$(pidof "$@")
+	test -z "$PIDS" && return 0
+	echo "$PIDS" \
+		| xargs -I{} ps -p "{}" -o size,vsize,rss,cmd \
+		| awk 'NR==1; NR>1 {print $1"K", $2"Ki", $3"K", $4}' \
+		| numfmt --header --field 1,3 --from=si --to=si --suffix=B --format %.1f \
+		| numfmt --header --field 2 --from=iec-i --to=iec-i --suffix=B --format %.1f \
+		| sort -hk3,3 \
+		| column -t -R1,2,3 \
+		| GREP_COLORS='mt=1;94' egrep --color=always '.*SIZE.*VSZ.*RSS.*CMD.*|$' \
+		| GREP_COLORS='mt=1;32' egrep --color=always "KB|KiB|$" \
+		| GREP_COLORS='mt=0;33' egrep --color=always 'MB|MiB|$' \
+		| GREP_COLORS='mt=1;31' egrep --color=always "GB|GiB|$"
+}
+# driver installation function
+dwi(){
+    echo "Compiling drivers..."
+    cd "$HOME/sourcebuilt/drivers/rtl8188eu" && make clean && make all && sudo make install
+    echo "Done"
+    echo "Type $(tput bold)Yes$(tput sgr0) to reboot..."; read -r reply
+    [ "$reply" = "Yes" ] && sudo reboot || { echo "OK"; exit 0; }
+}
+###############################<-Custom Defined Functions->#############################
+RPROMPT='$(git_prompt_string)'
+####################################<-Bloat->####################################
+source ~/.local/bin/notifyre.sh
+source ~/.local/bin/bash-preexec.sh
+if [ -f /etc/bash.command-not-found ]; then
+    . /etc/bash.command-not-found
+fi
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#ecba0f,bold,underline"
+ZSH_AUTOSUGGEST_USE_ASYNC=true
+colorscript -r
